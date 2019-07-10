@@ -1,0 +1,15 @@
+server:
+  compression:
+    enabled: true
+  servlet:
+    context-path: /api/caixa-eletronico
+  port: ${SERVER_PORT:8082}
+
+springfox:
+  documentation:
+    swagger.v2.path: /api/caixa-eletronico/swagger.json
+    info:
+      title: Api-Caixa-Eletronico
+      description: Documentação do serviço Api-Caixa-Eletrônico.
+      version: 1.0
+    base-package: br.com.zenvia.caixaeletronico
