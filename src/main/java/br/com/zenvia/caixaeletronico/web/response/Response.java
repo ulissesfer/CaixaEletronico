@@ -2,23 +2,27 @@ package br.com.zenvia.caixaeletronico.web.response;
 
 import java.io.Serializable;
 
-public class Response<T> implements Serializable {
+public class Response implements Serializable {
 
-	private static final long serialVersionUID = 3824795543562593523L;
+	private static final long serialVersionUID = -7846243675689622652L;
 
 	private boolean success;
-	private String message;
-	private T data;
+	private String messages;
+	private Data data;
 
-	public Response() {}
+	public Response() {
+		this.data = new Data();
+	}
 
-	public Response(boolean success, String message, T data) {
-		this.success = success;
-		this.message = message;
+	public void setData(Data data) {
 		this.data = data;
 	}
 
-	public boolean isSuccess() {
+	public Data getData() {
+		return data;
+	}
+
+	public boolean getSuccess() {
 		return success;
 	}
 
@@ -26,20 +30,11 @@ public class Response<T> implements Serializable {
 		this.success = success;
 	}
 
-	public String getMessage() {
-		return message;
+	public String getMessages() {
+		return messages;
 	}
 
-	public void setMessage(String message) {
-		this.message = message;
+	public void setMessages(String messages) {
+		this.messages = messages;
 	}
-
-	public T getData() {
-		return data;
-	}
-
-	public void setData(T data) {
-		this.data = data;
-	}
-
 }
