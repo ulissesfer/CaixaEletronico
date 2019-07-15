@@ -1,18 +1,19 @@
 package br.com.zenvia.caixaeletronico.service;
 
-import java.util.Optional;
+import java.util.EnumMap;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import br.com.zenvia.caixaeletronico.service.dto.CacheDispenser;
+import br.com.zenvia.caixaeletronico.service.dto.CasheDispenser;
 import br.com.zenvia.caixaeletronico.service.dto.Notas;
-import br.com.zenvia.caixaeletronico.service.entity.CacheDispenserEntity;
-import br.com.zenvia.caixaeletronico.service.repository.CacheDispenserRepository;
+import br.com.zenvia.caixaeletronico.service.entity.CasheDispenserEntity;
+import br.com.zenvia.caixaeletronico.service.repository.CasheDispenserRepository;
 import br.com.zenvia.caixaeletronico.web.response.error.ErrorMessage;
-import br.com.zenvia.caixaeletronico.web.response.exception.CacheDispenserValidatorException;
+import br.com.zenvia.caixaeletronico.web.response.exception.CasheDispenserValidatorException;
 
 @Service
 public class ApiCaixaEletronicoService {
@@ -20,50 +21,47 @@ public class ApiCaixaEletronicoService {
 	private final Logger log = LoggerFactory.getLogger(ErrorMessage.class);
 	
 	@Autowired
-	private CacheDispenserRepository cacheDispenserRepository;
+	private CasheDispenserRepository casheDispenserRepository;
 
 	/**
-	 * Realiza o saque do valor no cache dispenser
+	 * Realiza o saque do valor no cashe dispenser
 	 * 
-	 * @param Long idCacheDispenser
+	 * @param Long idCasheDispenser
 	 * @param Long valor
-	 * @return CacheDispenser
+	 * @return CasheDispenser
 	 * @throws Exception
 	 */
-	public CacheDispenser getSaque(Long idCacheDispenser, Long valorParaSaque) throws CacheDispenserValidatorException {
+	public CasheDispenser getSaque(Long idCasheDispenser, Long valorParaSaque) {
 		log.debug("getSaque");
-		CacheDispenserEntity cacheDispenserEntity = cacheDispenserRepository.findById(idCacheDispenser).orElseThrow(
-				() -> new CacheDispenserValidatorException("Cache dispenser não encontrado."));
+		CasheDispenserEntity casheDispenserEntity = casheDispenserRepository.findById(idCasheDispenser).orElseThrow(
+				() -> new CasheDispenserValidatorException("Cashe dispenser não encontrado."));
 
-		getValorTotalDisponivelCD(cacheDispenserEntity, valorParaSaque);
+		getValorTotalDisponivelCD(casheDispenserEntity, valorParaSaque);
 
-		CacheDispenser saque = realizaSaque(cacheDispenserEntity, valorParaSaque);
-		return saque;
+		return realizaSaque(casheDispenserEntity, valorParaSaque);
 	}
 
 	/**
 	 * Realiza sque e contagem das notas
 	 * 
-	 * @param CacheDispenserEntity cacheDispenserEntity
+	 * @param CasheDispenserEntity casheDispenserEntity
 	 * @param Long valor
-	 * @return CacheDispenser
+	 * @return CasheDispenser
 	 * @throws Exception
 	 */
-	private CacheDispenser realizaSaque(CacheDispenserEntity cacheDispenserEntity, Long valorParaSaque)
-			throws CacheDispenserValidatorException {
-		
-		log.debug("saque -> cache dispenser "+cacheDispenserEntity.getId()+" / valor R$"+valorParaSaque);
-		CacheDispenser resp = new CacheDispenser();
+	private CasheDispenser realizaSaque(CasheDispenserEntity casheDispenserEntity, Long valorParaSaque) {
+		log.debug( "saque -> cashe dispenser "+casheDispenserEntity.getId()+" / valor R$"+valorParaSaque);
+		CasheDispenser resp = new CasheDispenser();
 
 		resp.setValorTotal(valorParaSaque);
 
-		long notasDe100 = getTotalNotas(cacheDispenserEntity, resp, Notas.CEM);
-		long notasDe50 = getTotalNotas(cacheDispenserEntity, resp, Notas.CINQUENTA);
-		long notasDe20 = getTotalNotas(cacheDispenserEntity, resp, Notas.VINTE);
-		long notasDe10 = getTotalNotas(cacheDispenserEntity, resp, Notas.DEZ);
+		long notasDe100 = getTotalNotas(casheDispenserEntity, resp, Notas.CEM);
+		long notasDe50 = getTotalNotas(casheDispenserEntity, resp, Notas.CINQUENTA);
+		long notasDe20 = getTotalNotas(casheDispenserEntity, resp, Notas.VINTE);
+		long notasDe10 = getTotalNotas(casheDispenserEntity, resp, Notas.DEZ);
 
-		if (notasDe100 == 0 && notasDe50 == 0 && notasDe20 == 0 && notasDe10 == 0) {
-			throw new CacheDispenserValidatorException("Valor indisponível para saque, tente outro!");
+		if (resp.getValorTotal() > 0) {
+			throw new CasheDispenserValidatorException("Valor indisponível para saque, tente outro!");
 		}
 
 		resp.setValorTotal(valorParaSaque);
@@ -72,16 +70,16 @@ public class ApiCaixaEletronicoService {
 		resp.setQtdNota50(notasDe50);
 		resp.setQtdNota100(notasDe100);
 
-		updateQtdNotasCD(cacheDispenserEntity, resp);
+		updateQtdNotasCD(casheDispenserEntity, resp);
 		return resp;
 	}
 
 	/**
 	 * Realiza update no BD das notas
-	 * @param CacheDispenserEntity cdEntity
-	 * @param CacheDispenser cd
+	 * @param CasheDispenserEntity cdEntity
+	 * @param CasheDispenser cd
 	 */
-	private void updateQtdNotasCD(CacheDispenserEntity cdEntity, CacheDispenser cd) {
+	private void updateQtdNotasCD(CasheDispenserEntity cdEntity, CasheDispenser cd) {
 		log.debug("Func updateQtdNotasCD");
 		long notas10 = cdEntity.getQtdNota10() - cd.getQtdNota10();
 		long notas20 = cdEntity.getQtdNota20() - cd.getQtdNota20();
@@ -92,100 +90,88 @@ public class ApiCaixaEletronicoService {
 		cdEntity.setQtdNota20(notas20);
 		cdEntity.setQtdNota50(notas50);
 		cdEntity.setQtdNota100(notas100);
-		cacheDispenserRepository.save(cdEntity);
+		casheDispenserRepository.save(cdEntity);
 	}
 
 	/**
 	 * Verifica a quantidade de notas por valor deverá ser dispensada
-	 * @param CacheDispenserEntity cacheDispenserEntity
-	 * @param CacheDispenser cd
+	 * @param CasheDispenserEntity casheDispenserEntity
+	 * @param CasheDispenser cd
 	 * @param Notas nota
 	 * @return
 	 */
-	private long getTotalNotas(CacheDispenserEntity cacheDispenserEntity, CacheDispenser cd, Notas nota) {
+	private long getTotalNotas(CasheDispenserEntity casheDispenserEntity, CasheDispenser cd, Notas nota) {
 		log.debug("Func getTotalNotas");
 		long resp = 0;
-		boolean temNotaDe100 = cacheDispenserEntity.getQtdNota100() > 0 ? true : false;
-		boolean temNotaDe50 = cacheDispenserEntity.getQtdNota50() > 0 ? true : false;
-		boolean temNotaDe20 = cacheDispenserEntity.getQtdNota20() > 0 ? true : false;
-		boolean temNotaDe10 = cacheDispenserEntity.getQtdNota10() > 0 ? true : false;
 
-		long notas = getTotalDeNotas(cacheDispenserEntity, nota);
+		Map<Notas, Long> notasDisponiveisNoCD = getNotasDisponiveisNoCD(casheDispenserEntity);
+		long qtdDeNotasNoCD = notasDisponiveisNoCD.get(nota).longValue();
 
 		long valorParaSaque = cd.getValorTotal();
-		long tmpValorSaque = valorParaSaque;
+		long tmpSobra = valorParaSaque % nota.getValor();
 
-		while (tmpValorSaque > 0 && notas > 0) {
-			tmpValorSaque -= nota.getValor();
-			long tmpSobra = valorParaSaque % nota.getValor();
-			if (tmpValorSaque == 0
-					|| (temNotaDe100 && tmpValorSaque >= Notas.CEM.getValor())
-					|| (temNotaDe50 && tmpValorSaque >= Notas.CINQUENTA.getValor())
-					|| (temNotaDe20 && tmpValorSaque >= Notas.VINTE.getValor())
-					|| (temNotaDe10 && tmpValorSaque >= Notas.DEZ.getValor())) {
-				
-				resp = tmpSobra != 0 ? (valorParaSaque - tmpValorSaque) / nota.getValor() : valorParaSaque / nota.getValor();
-				valorParaSaque -= (nota.getValor() * resp);
+		boolean temNotaDe10 = notasDisponiveisNoCD.get(Notas.DEZ).longValue() > 0;
 
-				cd.setValorTotal(valorParaSaque);
-				break;
-			}
+		if (qtdDeNotasNoCD > 0 && valorParaSaque >= nota.getValor()) {
+			if (tmpSobra == 0) {
+				resp = valorParaSaque / nota.getValor();
+				valorParaSaque = 0L;
+			} else {
+				while (valorParaSaque >= nota.getValor()) {
+					if((valorParaSaque - nota.getValor()) <= Notas.DEZ.getValor() && !temNotaDe10) {
+						break;
+					}
+					resp += 1;
+					valorParaSaque -= nota.getValor();
+				}
+			}			
 		}
-
+		
+		cd.setValorTotal(valorParaSaque);
 		return resp;
 	}
 
 	/**
 	 * Busca a quantidade de notas, conforme a nota passada
-	 * @param CacheDispenserEntity cacheDispenserEntity
+	 * @param CasheDispenserEntity casheDispenserEntity
 	 * @param Notas valorNota
 	 * @return long
 	 */
-	private long getTotalDeNotas(CacheDispenserEntity cacheDispenserEntity, Notas valorNota) {
+	private Map<Notas, Long> getNotasDisponiveisNoCD(CasheDispenserEntity casheDispenserEntity) {
 		log.debug("Func getTotalDeNotas");
-		long resp = 0;
+		Map<Notas, Long> resp = new EnumMap<>(Notas.class);
 
-		switch (valorNota) {
-		case CEM:
-			resp = cacheDispenserEntity.getQtdNota100();
-			break;
-		case CINQUENTA:
-			resp = cacheDispenserEntity.getQtdNota50();
-			break;
-		case VINTE:
-			resp = cacheDispenserEntity.getQtdNota20();
-			break;
-		case DEZ:
-			resp = cacheDispenserEntity.getQtdNota10();
-			break;
-		}
+		resp.put(Notas.CEM, casheDispenserEntity.getQtdNota100());
+		resp.put(Notas.CINQUENTA, casheDispenserEntity.getQtdNota50());
+		resp.put(Notas.VINTE, casheDispenserEntity.getQtdNota20());
+		resp.put(Notas.DEZ, casheDispenserEntity.getQtdNota10());
+
 		return resp;
 	}
 
 	/**
-	 * Busca o valor total disponível no Cache Dispenser, fazendo a contagem das
+	 * Busca o valor total disponível no Cashe Dispenser, fazendo a contagem das
 	 * notas disponíveis.
 	 * 
-	 * @param CacheDispenserEntity cacheDispenserEntity
+	 * @param CasheDispenserEntity casheDispenserEntity
 	 * @param Long valorSaque
 	 * @return long
 	 * @throws Exception
 	 */
-	private long getValorTotalDisponivelCD(CacheDispenserEntity cacheDispenserEntity, Long valorSaque)
-			throws CacheDispenserValidatorException {
+	private long getValorTotalDisponivelCD(CasheDispenserEntity casheDispenserEntity, Long valorSaque) {
 		log.debug("Func getValorTotalDisponivelCD");
-		Long valorTotalDe100 = cacheDispenserEntity.getQtdNota100() * 100;
-		Long valorTotalDe50 = cacheDispenserEntity.getQtdNota50() * 50;
-		Long valorTotalDe20 = cacheDispenserEntity.getQtdNota20() * 20;
-		Long valorTotalDe10 = cacheDispenserEntity.getQtdNota10() * 10;
+		Long valorTotalDe100 = casheDispenserEntity.getQtdNota100() * 100;
+		Long valorTotalDe50 = casheDispenserEntity.getQtdNota50() * 50;
+		Long valorTotalDe20 = casheDispenserEntity.getQtdNota20() * 20;
+		Long valorTotalDe10 = casheDispenserEntity.getQtdNota10() * 10;
 
-		long valorTotalCacheDispenser = valorTotalDe100 + valorTotalDe50 + valorTotalDe20 + valorTotalDe10;
+		long valorTotalCasheDispenser = valorTotalDe100 + valorTotalDe50 + valorTotalDe20 + valorTotalDe10;
 
-		if (valorTotalCacheDispenser < valorSaque) {
-			throw new CacheDispenserValidatorException("Valor do saque maior que valor disponível no momento");
+		if (valorTotalCasheDispenser < valorSaque) {
+			throw new CasheDispenserValidatorException("Valor do saque maior que valor disponível no momento.");
 		}
 
-		return valorTotalCacheDispenser;
+		return valorTotalCasheDispenser;
 	}
 
 }

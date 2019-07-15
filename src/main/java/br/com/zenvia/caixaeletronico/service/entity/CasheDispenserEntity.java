@@ -6,7 +6,7 @@ import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 
 @Entity
-public class CacheDispenserEntity {
+public class CasheDispenserEntity {
 
 	@Id
 	@GeneratedValue
@@ -24,10 +24,10 @@ public class CacheDispenserEntity {
 	@NotNull
 	private Long qtdNota10;
 
-	public CacheDispenserEntity() {
+	public CasheDispenserEntity() {
 	}
 
-	public CacheDispenserEntity(Long qtdNota100, Long qtdNota50, Long qtdNota20, Long qtdNota10) {
+	public CasheDispenserEntity(Long qtdNota100, Long qtdNota50, Long qtdNota20, Long qtdNota10) {
 		this.qtdNota100 = qtdNota100;
 		this.qtdNota50 = qtdNota50;
 		this.qtdNota20 = qtdNota20;

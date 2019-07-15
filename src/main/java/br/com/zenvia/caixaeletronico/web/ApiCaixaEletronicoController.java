@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.zenvia.caixaeletronico.service.ApiCaixaEletronicoService;
-import br.com.zenvia.caixaeletronico.service.dto.CacheDispenser;
+import br.com.zenvia.caixaeletronico.service.dto.CasheDispenser;
 import br.com.zenvia.caixaeletronico.web.response.Response;
 import br.com.zenvia.caixaeletronico.web.response.error.ErrorMessage;
 
@@ -26,7 +26,7 @@ public class ApiCaixaEletronicoController {
 		Response resp = new Response();
 
 		try {
-			CacheDispenser saque = apiCaixaEletronicoService.getSaque(idCacheDispenser, valor);
+			CasheDispenser saque = apiCaixaEletronicoService.getSaque(idCacheDispenser, valor);
 			resp.getData().setCacheDispenser(saque);
 			resp.setSuccess(true);
 		} catch (Exception e) {

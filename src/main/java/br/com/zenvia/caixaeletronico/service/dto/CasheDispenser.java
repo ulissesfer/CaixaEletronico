@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @JsonInclude(Include.NON_NULL)
-public class CacheDispenser implements Serializable {
+public class CasheDispenser implements Serializable {
 
 	private static final long serialVersionUID = -7218444995941158792L;
 
@@ -16,10 +16,10 @@ public class CacheDispenser implements Serializable {
 	private long qtdNota20;
 	private long qtdNota10;
 
-	public CacheDispenser() {
+	public CasheDispenser() {
 	}
 
-	public CacheDispenser(long valorTotal, long qtdNota100, long qtdNota50, long qtdNota20, long qtdNota10) {
+	public CasheDispenser(long valorTotal, long qtdNota100, long qtdNota50, long qtdNota20, long qtdNota10) {
 		this.valorTotal = valorTotal;
 		this.qtdNota100 = qtdNota100;
 		this.qtdNota50 = qtdNota50;
